@@ -29,10 +29,15 @@ public class MyDBHelper
     public void addWord(String theme ,Note w)
     {
         String text = w.getText();
-        String date = new Date().toString();
+        String date;
+        if (w.date == null)
+            date = new Date().toString();
+        else
+            date = w.date;
         ContentValues cv = new ContentValues();
         cv.put("txt", text);
-        cv.put("rus", date);
+        cv.put("date", date);
+        cv.put("path",w.getPath());
         Log.d("Inserting", "addWord: "+ cv.toString());
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         db.insert(theme, null, cv);
@@ -47,12 +52,12 @@ public class MyDBHelper
         if (c.moveToFirst())
         {
             int id_col = c.getColumnIndex("id");
-            int eng_col = c.getColumnIndex("eng");
-            int rus_col = c.getColumnIndex("rus");
-            int val_col = c.getColumnIndex("value");
+            int txt_col = c.getColumnIndex("txt");
+            int date_col = c.getColumnIndex("date");
+            int path_col = c.getColumnIndex("path");
             int vis_col = c.getColumnIndex("visible");
             do {
-                out.add(new Note(1, null, null));
+                out.add(new Note(c.getInt(id_col), c.getString(date_col), c.getString(txt_col), c.getString(path_col)));
             } while(c.moveToNext());
         }
         else
@@ -66,9 +71,11 @@ public class MyDBHelper
     }
     public boolean isCurrentDBAvailable(String theme)
     {
+
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         try
         {
+            //db.execSQL("drop table" + theme+ ";");
             db.query(theme, null, null, null, null, null, null);
             return true;
         }
@@ -91,6 +98,17 @@ public class MyDBHelper
         dbHelper.close();
     }
 
+    public void dropTable()
+    {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        //db.execSQL("DROP TABLE IF EXISTS " + theme+ ";");
+        db.execSQL("create table "+ theme + " ("
+                + "id integer primary key autoincrement,"
+                + "txt text, "
+                + "date date, "
+                + "path text " + ");");
+    }
+
     class DBHelper extends SQLiteOpenHelper
     {
 
@@ -108,7 +126,8 @@ public class MyDBHelper
             db.execSQL("create table "+ theme + " ("
                     + "id integer primary key autoincrement,"
                     + "txt text, "
-                    + "date date, " + ");");
+                    + "date date, "
+                    + "path text " + ");");
         }
 
         @Override
