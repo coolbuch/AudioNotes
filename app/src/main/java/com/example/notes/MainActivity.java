@@ -15,6 +15,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,12 +43,14 @@ public class MainActivity extends AppCompatActivity {
     private static String serviceRegion = "westeurope";
     private static String TAG = "AAAAAA";
     private static String TABLENAME = "Notes";
+    private String lang;
 
     private ListView lv;
     private Button button;
     private MyDBHelper dbHelper;
     private MediaRecorder mediaRecorder;
     private MediaPlayer mediaPlayer;
+    private Spinner langSpinner;
    // private String fileName = "azaza";
     private File path;
     private ArrayAdapter<String> arrayAdapter;
@@ -75,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
         });
         updateAdapter();
         button = (Button) findViewById(R.id.button1);
+        langSpinner = findViewById(R.id.spinner);
 
         int requestCode = 5;
         ActivityCompat.requestPermissions(MainActivity.this, new String[]{RECORD_AUDIO, INTERNET}, requestCode);
@@ -153,9 +157,9 @@ public class MainActivity extends AppCompatActivity {
         String filename = new Date().toString();
         try {
             SpeechConfig config = SpeechConfig.fromSubscription(speechSubscriptionKey, serviceRegion);
-
-            config.setSpeechRecognitionLanguage("ru-RU");
-            Log.d(TAG, "onSpeechButtonClicked: " + config.getSpeechRecognitionLanguage());
+            String currentLang = langSpinner.getSelectedItem().toString();
+            config.setSpeechRecognitionLanguage(currentLang);
+            Log.d(TAG, "onSpeechButtonClicked: " + currentLang + "------" + config.getSpeechRecognitionLanguage());
             assert(config != null);
             SpeechRecognizer reco = new SpeechRecognizer(config);
             assert(reco != null);
@@ -168,7 +172,6 @@ public class MainActivity extends AppCompatActivity {
             recordStop();
             if (result.getReason() == ResultReason.RecognizedSpeech)
             {
-                txt.setText(result.toString());
                 String text = "";
                 boolean flag = false;
                 for (char c: result.toString().toCharArray())
@@ -197,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, Arrays.toString(dbHelper.getWords(TABLENAME).toArray()));
         } catch (Exception ex) {
             Log.e("SpeechSDKDemo", "unexpected " + ex.getMessage());
-            assert(false);
+           // assert(false);
         }
     }
 
